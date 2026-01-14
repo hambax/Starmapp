@@ -12,6 +12,20 @@
       color: #fff;
       overflow: hidden;
     }
+    body.night-mode {
+      --ui-bg: rgba(30, 0, 0, 0.9);
+      --ui-border: rgba(255, 50, 50, 0.2);
+      --ui-text: #ff6b6b;
+      --ui-text-dim: #aa4444;
+      --ui-accent: #ff4444;
+    }
+    body:not(.night-mode) {
+      --ui-bg: rgba(0, 0, 30, 0.9);
+      --ui-border: rgba(255, 255, 255, 0.1);
+      --ui-text: #ffffff;
+      --ui-text-dim: #888888;
+      --ui-accent: #4a6cf7;
+    }
     #sky-canvas {
       position: fixed;
       top: 0;
@@ -59,50 +73,57 @@
     .btn.success { background: linear-gradient(135deg, #22c55e, #16a34a); }
     .btn.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
     .status { margin-top: 20px; font-size: 14px; color: #aaa; max-width: 300px; min-height: 24px; }
+    
     #info-panel {
       position: fixed;
       top: 10px;
       left: 10px;
-      background: rgba(0,0,30,0.8);
+      background: var(--ui-bg);
       padding: 12px 16px;
       border-radius: 10px;
       font-size: 12px;
       z-index: 50;
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid var(--ui-border);
       pointer-events: none;
+      color: var(--ui-text);
     }
     #info-panel div { margin: 4px 0; }
-    .label { color: #888; }
-    #compass {
+    .label { color: var(--ui-text-dim); }
+    
+    #direction-display {
       position: fixed;
-      bottom: 140px;
+      bottom: 200px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,30,0.8);
+      background: var(--ui-bg);
       padding: 10px 20px;
       border-radius: 20px;
       font-size: 16px;
       z-index: 50;
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid var(--ui-border);
       pointer-events: none;
+      color: var(--ui-text);
     }
+    
     #legend {
       position: fixed;
       top: 10px;
       right: 10px;
-      background: rgba(0,0,30,0.8);
+      background: var(--ui-bg);
       padding: 12px 16px;
       border-radius: 10px;
       font-size: 11px;
       z-index: 50;
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid var(--ui-border);
       pointer-events: none;
+      color: var(--ui-text);
     }
     .legend-item { display: flex; align-items: center; margin: 4px 0; }
     .legend-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+    
     .permission-step {
       display: flex;
       align-items: center;
@@ -113,12 +134,12 @@
       width: 100%;
       max-width: 300px;
     }
-    .step-icon { font-size: 24px; margin-right: 12px; width: 40px; }
-    .step-status { font-size: 20px; margin-left: auto; }
+    .step-icon { font-size: 16px; margin-right: 12px; width: 40px; text-align: center; font-weight: bold; }
+    .step-status { font-size: 16px; margin-left: auto; }
     .step-text { text-align: left; flex: 1; }
     .step-title { font-weight: bold; font-size: 14px; }
     .step-desc { font-size: 11px; color: #888; }
-    .gyro-note {
+    .sensor-note {
       background: rgba(245, 158, 11, 0.2);
       border: 1px solid rgba(245, 158, 11, 0.5);
       padding: 12px;
@@ -128,187 +149,387 @@
       max-width: 300px;
     }
     
-    /* Time Control Panel */
-    #time-panel {
+    /* Control Panel */
+    #control-panel {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(0,0,30,0.9);
-      padding: 15px;
+      background: var(--ui-bg);
       z-index: 100;
       backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(255,255,255,0.1);
+      border-top: 1px solid var(--ui-border);
+      max-height: 60vh;
+      overflow-y: auto;
     }
     
     @media (min-width: 768px) {
-      #time-panel {
+      #control-panel {
         right: auto;
-        width: 320px;
+        width: 350px;
         border-radius: 0 10px 0 0;
-        border-right: 1px solid rgba(255,255,255,0.1);
+        border-right: 1px solid var(--ui-border);
+        max-height: 80vh;
       }
-      #compass {
+      #direction-display {
         bottom: 20px;
       }
     }
     
-    .time-panel-header {
+    .panel-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--ui-border);
+      position: sticky;
+      top: 0;
+      background: var(--ui-bg);
+      z-index: 10;
+    }
+    
+    .panel-tab {
+      flex: 1;
+      padding: 12px 8px;
+      background: none;
+      border: none;
+      color: var(--ui-text-dim);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .panel-tab.active {
+      color: var(--ui-text);
+      border-bottom-color: var(--ui-accent);
+    }
+    
+    .panel-tab:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .panel-content {
+      padding: 15px;
+      display: none;
+    }
+    
+    .panel-content.active {
+      display: block;
+    }
+    
+    .control-section {
+      margin-bottom: 15px;
+    }
+    
+    .control-section-title {
+      font-size: 11px;
+      color: var(--ui-text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    
+    .control-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    
+    .control-input-group {
+      flex: 1;
+    }
+    
+    .control-input-group label {
+      display: block;
+      font-size: 10px;
+      color: var(--ui-text-dim);
+      margin-bottom: 4px;
+    }
+    
+    .control-input-group input,
+    .control-input-group select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--ui-border);
+      background: rgba(255,255,255,0.1);
+      color: var(--ui-text);
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    .control-input-group input:focus,
+    .control-input-group select:focus {
+      outline: none;
+      border-color: var(--ui-accent);
+    }
+    
+    .control-btn {
+      padding: 8px 12px;
+      border: 1px solid var(--ui-border);
+      border-radius: 6px;
+      background: rgba(255,255,255,0.1);
+      color: var(--ui-text);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      touch-action: manipulation;
+      white-space: nowrap;
+    }
+    
+    .control-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .control-btn.active {
+      background: var(--ui-accent);
+      border-color: var(--ui-accent);
+    }
+    
+    .control-btn.primary {
+      background: var(--ui-accent);
+      border-color: var(--ui-accent);
+    }
+    
+    .control-btn-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    
+    .control-btn-grid.cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .control-btn-grid.cols-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .object-btn {
+      padding: 10px 8px;
+      text-align: center;
+    }
+    
+    .object-btn .name {
+      font-size: 11px;
+    }
+    
+    .slider-container {
       display: flex;
       align-items: center;
+      gap: 10px;
+    }
+    
+    .slider-container input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .slider-container input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--ui-accent);
+      cursor: pointer;
+    }
+    
+    .slider-value {
+      min-width: 40px;
+      text-align: right;
+      font-size: 12px;
+      color: var(--ui-text-dim);
+    }
+    
+    .toggle-row {
+      display: flex;
       justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--ui-border);
+    }
+    
+    .toggle-row:last-child {
+      border-bottom: none;
+    }
+    
+    .toggle-label {
+      font-size: 13px;
+    }
+    
+    .toggle-switch {
+      width: 44px;
+      height: 24px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .toggle-switch.active {
+      background: var(--ui-accent);
+    }
+    
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+    }
+    
+    .toggle-switch.active::after {
+      transform: translateX(20px);
+    }
+    
+    .time-display-large {
+      text-align: center;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
       margin-bottom: 12px;
     }
     
-    .time-panel-title {
-      font-size: 14px;
+    .time-display-large .time-big {
+      font-size: 28px;
       font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-variant-numeric: tabular-nums;
+      color: var(--ui-text);
     }
     
-    .time-mode-badge {
+    .time-display-large .date-small {
+      font-size: 12px;
+      color: var(--ui-text-dim);
+      margin-top: 4px;
+    }
+    
+    .time-mode-indicator {
+      display: inline-block;
       font-size: 10px;
       padding: 3px 8px;
       border-radius: 10px;
       background: #22c55e;
       color: white;
+      margin-left: 8px;
+      vertical-align: middle;
     }
     
-    .time-mode-badge.planning {
+    .time-mode-indicator.planning {
       background: #f59e0b;
     }
     
-    .time-controls {
+    .object-info-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    
+    .object-info-card h4 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .object-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 12px;
+    }
+    
+    .object-info-item {
       display: flex;
       flex-direction: column;
-      gap: 10px;
     }
     
-    .time-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    
-    .time-input-group {
-      flex: 1;
-    }
-    
-    .time-input-group label {
-      display: block;
+    .object-info-item .label {
       font-size: 10px;
-      color: #888;
-      margin-bottom: 4px;
+      color: var(--ui-text-dim);
     }
     
-    .time-input-group input {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.1);
-      color: white;
-      font-size: 14px;
-      font-family: inherit;
-    }
-    
-    .time-input-group input:focus {
-      outline: none;
-      border-color: #4a6cf7;
-    }
-    
-    .time-buttons {
-      display: flex;
-      gap: 8px;
-      margin-top: 5px;
-    }
-    
-    .time-btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      font-size: 12px;
+    .object-info-item .value {
       font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
-      touch-action: manipulation;
     }
     
-    .time-btn.now {
-      background: #22c55e;
-      color: white;
+    .crosshair {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 45;
+      display: none;
     }
     
-    .time-btn.now:hover {
-      background: #16a34a;
+    .crosshair.visible {
+      display: block;
     }
     
-    .time-btn.offset {
-      background: rgba(255,255,255,0.1);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.2);
+    .crosshair svg {
+      width: 60px;
+      height: 60px;
     }
     
-    .time-btn.offset:hover {
-      background: rgba(255,255,255,0.2);
-    }
-    
-    .selected-time-display {
-      text-align: center;
-      padding: 8px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 6px;
-      margin-top: 8px;
-    }
-    
-    .selected-time-display .time-big {
-      font-size: 20px;
-      font-weight: bold;
-      font-variant-numeric: tabular-nums;
-    }
-    
-    .selected-time-display .date-small {
-      font-size: 12px;
-      color: #888;
-      margin-top: 2px;
+    .sensor-status {
+      font-size: 10px;
+      color: var(--ui-text-dim);
+      margin-top: 4px;
     }
   </style>
 </head>
 <body>
   <canvas id="sky-canvas"></canvas>
   
+  <!-- Crosshair -->
+  <div class="crosshair" id="crosshair">
+    <svg viewBox="0 0 60 60">
+      <circle cx="30" cy="30" r="20" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+      <line x1="30" y1="5" x2="30" y2="20" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+      <line x1="30" y1="40" x2="30" y2="55" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+      <line x1="5" y1="30" x2="20" y2="30" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+      <line x1="40" y1="30" x2="55" y2="30" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+    </svg>
+  </div>
+  
   <div id="ui-overlay">
-    <h1>⭐ Star Tracker</h1>
-    <p class="subtitle">Point your phone at the sky to see stars & planets</p>
+    <h1>Star Tracker</h1>
+    <p class="subtitle">Point your phone at the sky to see stars and planets</p>
     
     <div class="permission-step">
-      <span class="step-icon">📍</span>
+      <span class="step-icon">GPS</span>
       <div class="step-text">
         <div class="step-title">Location</div>
         <div class="step-desc">To show stars visible from your position</div>
       </div>
-      <span class="step-status" id="loc-status">⏳</span>
+      <span class="step-status" id="loc-status">...</span>
     </div>
     
     <div class="permission-step">
-      <span class="step-icon">📱</span>
+      <span class="step-icon">IMU</span>
       <div class="step-text">
-        <div class="step-title">Gyroscope / Motion</div>
-        <div class="step-desc">To track where you're pointing</div>
+        <div class="step-title">Gyroscope and Compass</div>
+        <div class="step-desc">To track phone orientation and heading</div>
       </div>
-      <span class="step-status" id="gyro-status">⏳</span>
+      <span class="step-status" id="gyro-status">...</span>
     </div>
     
-    <div class="gyro-note" id="ios-note" style="display:none;">
-      ⚠️ <strong>iOS Users:</strong> Tap "Enable Gyroscope" and allow "Motion & Orientation" access!
+    <div class="sensor-note" id="ios-note" style="display:none;">
+      <strong>iOS Users:</strong> You will be prompted to allow "Motion and Orientation" access. This includes both the gyroscope and compass sensors.
     </div>
     
-    <button class="btn" id="location-btn" type="button">📍 Grant Location Access</button>
-    <button class="btn" id="gyro-btn" type="button" style="display:none;">📱 Enable Gyroscope</button>
-    <button class="btn success" id="start-btn" type="button" style="display:none;">🚀 Start Star Tracking!</button>
+    <button class="btn" id="location-btn" type="button">Grant Location Access</button>
+    <button class="btn" id="sensor-btn" type="button" style="display:none;">Enable Sensors</button>
+    <button class="btn success" id="start-btn" type="button" style="display:none;">Start Star Tracking</button>
     
     <p class="status" id="status"></p>
   </div>
@@ -317,11 +538,12 @@
     <div><span class="label">Location:</span> <span id="loc-display">--</span></div>
     <div><span class="label">Facing:</span> <span id="az-display">--</span></div>
     <div><span class="label">Elevation:</span> <span id="alt-display">--</span></div>
-    <div><span class="label">Gyro:</span> <span id="gyro-display">--</span></div>
+    <div><span class="label">Sensors:</span> <span id="sensor-display">--</span></div>
+    <div class="sensor-status" id="compass-status"></div>
   </div>
   
-  <div id="compass" style="display:none;">
-    <span id="direction">N</span> <span id="degrees">0°</span>
+  <div id="direction-display" style="display:none;">
+    <span id="direction">N</span> <span id="degrees">0</span>
   </div>
   
   <div id="legend" style="display:none;">
@@ -331,37 +553,213 @@
     <div class="legend-item"><div class="legend-dot" style="background:#FFFFFF;"></div> Stars</div>
   </div>
   
-  <!-- Time Control Panel -->
-  <div id="time-panel" style="display:none;">
-    <div class="time-panel-header">
-      <div class="time-panel-title">
-        📷 Photo Planner
-        <span class="time-mode-badge" id="time-mode-badge">LIVE</span>
+  <!-- Control Panel -->
+  <div id="control-panel" style="display:none;">
+    <div class="panel-tabs">
+      <button class="panel-tab active" data-tab="time">Time</button>
+      <button class="panel-tab" data-tab="find">Find</button>
+      <button class="panel-tab" data-tab="view">View</button>
+      <button class="panel-tab" data-tab="settings">Settings</button>
+    </div>
+    
+    <!-- Time Tab -->
+    <div class="panel-content active" id="tab-time">
+      <div class="time-display-large">
+        <div class="time-big" id="display-time">--:--:--</div>
+        <span class="time-mode-indicator" id="time-mode-badge">LIVE</span>
+        <div class="date-small" id="display-date">----</div>
+      </div>
+      
+      <div class="control-section">
+        <div class="control-row">
+          <div class="control-input-group">
+            <label>Date</label>
+            <input type="date" id="date-input">
+          </div>
+          <div class="control-input-group">
+            <label>Time</label>
+            <input type="time" id="time-input">
+          </div>
+        </div>
+        
+        <div class="control-btn-grid cols-4">
+          <button class="control-btn primary" id="now-btn">Now</button>
+          <button class="control-btn" id="plus1h-btn">+1h</button>
+          <button class="control-btn" id="plus3h-btn">+3h</button>
+          <button class="control-btn" id="plus6h-btn">+6h</button>
+        </div>
+      </div>
+      
+      <div class="control-section">
+        <div class="control-section-title">Quick Times</div>
+        <div class="control-btn-grid cols-2">
+          <button class="control-btn" id="sunset-btn">Sunset</button>
+          <button class="control-btn" id="sunrise-btn">Sunrise</button>
+          <button class="control-btn" id="midnight-btn">Midnight</button>
+          <button class="control-btn" id="golden-btn">Golden Hour</button>
+        </div>
+      </div>
+      
+      <div class="control-section">
+        <div class="control-section-title">Time Scrubber</div>
+        <div class="slider-container">
+          <input type="range" id="time-scrubber" min="0" max="1440" value="720">
+          <span class="slider-value" id="scrubber-value">12:00</span>
+        </div>
       </div>
     </div>
     
-    <div class="time-controls">
-      <div class="time-row">
-        <div class="time-input-group">
-          <label>Date</label>
-          <input type="date" id="date-input">
-        </div>
-        <div class="time-input-group">
-          <label>Time</label>
-          <input type="time" id="time-input">
+    <!-- Find Tab -->
+    <div class="panel-content" id="tab-find">
+      <div class="control-section">
+        <div class="control-section-title">Solar System</div>
+        <div class="control-btn-grid">
+          <button class="control-btn object-btn" data-find="Sun">
+            <span class="name">Sun</span>
+          </button>
+          <button class="control-btn object-btn" data-find="Moon">
+            <span class="name">Moon</span>
+          </button>
+          <button class="control-btn object-btn" data-find="Mercury">
+            <span class="name">Mercury</span>
+          </button>
+          <button class="control-btn object-btn" data-find="Venus">
+            <span class="name">Venus</span>
+          </button>
+          <button class="control-btn object-btn" data-find="Mars">
+            <span class="name">Mars</span>
+          </button>
+          <button class="control-btn object-btn" data-find="Jupiter">
+            <span class="name">Jupiter</span>
+          </button>
+          <button class="control-btn object-btn" data-find="Saturn">
+            <span class="name">Saturn</span>
+          </button>
+          <button class="control-btn object-btn" data-find="Polaris">
+            <span class="name">Polaris</span>
+          </button>
         </div>
       </div>
       
-      <div class="time-buttons">
-        <button class="time-btn now" id="now-btn" type="button">⏱ Now</button>
-        <button class="time-btn offset" id="plus1h-btn" type="button">+1h</button>
-        <button class="time-btn offset" id="plus3h-btn" type="button">+3h</button>
-        <button class="time-btn offset" id="sunset-btn" type="button">🌅 Sunset</button>
+      <div class="control-section">
+        <div class="control-section-title">Bright Stars</div>
+        <div class="control-btn-grid cols-4">
+          <button class="control-btn" data-find="Sirius">Sirius</button>
+          <button class="control-btn" data-find="Vega">Vega</button>
+          <button class="control-btn" data-find="Arcturus">Arcturus</button>
+          <button class="control-btn" data-find="Capella">Capella</button>
+          <button class="control-btn" data-find="Rigel">Rigel</button>
+          <button class="control-btn" data-find="Betelgeuse">Betelgeuse</button>
+          <button class="control-btn" data-find="Altair">Altair</button>
+          <button class="control-btn" data-find="Deneb">Deneb</button>
+        </div>
       </div>
       
-      <div class="selected-time-display">
-        <div class="time-big" id="display-time">--:--:--</div>
-        <div class="date-small" id="display-date">----</div>
+      <div class="object-info-card" id="object-info" style="display:none;">
+        <h4><span id="info-object-name">--</span></h4>
+        <div class="object-info-grid">
+          <div class="object-info-item">
+            <span class="label">Altitude</span>
+            <span class="value" id="info-altitude">--</span>
+          </div>
+          <div class="object-info-item">
+            <span class="label">Azimuth</span>
+            <span class="value" id="info-azimuth">--</span>
+          </div>
+          <div class="object-info-item">
+            <span class="label">Direction</span>
+            <span class="value" id="info-direction">--</span>
+          </div>
+          <div class="object-info-item">
+            <span class="label">Visibility</span>
+            <span class="value" id="info-visibility">--</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- View Tab -->
+    <div class="panel-content" id="tab-view">
+      <div class="control-section">
+        <div class="control-section-title">Field of View</div>
+        <div class="slider-container">
+          <span style="font-size: 12px;">Wide</span>
+          <input type="range" id="fov-slider" min="30" max="120" value="80">
+          <span style="font-size: 12px;">Narrow</span>
+        </div>
+        <div style="text-align: center; margin-top: 5px;">
+          <span class="slider-value" id="fov-value">80 deg</span>
+        </div>
+      </div>
+      
+      <div class="control-section">
+        <div class="control-section-title">Star Brightness Filter</div>
+        <div class="slider-container">
+          <span style="font-size: 12px;">Few</span>
+          <input type="range" id="mag-slider" min="-1" max="6" value="2" step="0.5">
+          <span style="font-size: 12px;">Many</span>
+        </div>
+        <div style="text-align: center; margin-top: 5px;">
+          <span class="slider-value">Magnitude limit: <span id="mag-value">2.0</span></span>
+        </div>
+      </div>
+      
+      <div class="control-section">
+        <div class="control-section-title">Quick Views</div>
+        <div class="control-btn-grid cols-2">
+          <button class="control-btn" id="view-north">Look North</button>
+          <button class="control-btn" id="view-south">Look South</button>
+          <button class="control-btn" id="view-east">Look East</button>
+          <button class="control-btn" id="view-west">Look West</button>
+          <button class="control-btn" id="view-zenith">Zenith (Up)</button>
+          <button class="control-btn" id="view-horizon">Horizon</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Settings Tab -->
+    <div class="panel-content" id="tab-settings">
+      <div class="control-section">
+        <div class="toggle-row">
+          <span class="toggle-label">Night Mode (Red)</span>
+          <div class="toggle-switch" id="toggle-night"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">Show Crosshair</span>
+          <div class="toggle-switch" id="toggle-crosshair"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">Show Grid Lines</span>
+          <div class="toggle-switch" id="toggle-grid"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">Show Labels</span>
+          <div class="toggle-switch active" id="toggle-labels"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">Show Horizon</span>
+          <div class="toggle-switch active" id="toggle-horizon"></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">Lock Sensors</span>
+          <div class="toggle-switch" id="toggle-gyro-lock"></div>
+        </div>
+      </div>
+      
+      <div class="control-section">
+        <div class="control-section-title">Background Stars</div>
+        <div class="slider-container">
+          <span style="font-size: 12px;">None</span>
+          <input type="range" id="bg-stars-slider" min="0" max="500" value="400">
+          <span style="font-size: 12px;">Many</span>
+        </div>
+      </div>
+      
+      <div class="control-section">
+        <div class="control-section-title">About</div>
+        <p style="font-size: 11px; color: var(--ui-text-dim); line-height: 1.5;">
+          Star Tracker helps you identify stars and planets in the night sky and plan your astrophotography sessions. Point your device at the sky or use touch controls to navigate.
+        </p>
       </div>
     </div>
   </div>
@@ -370,6 +768,7 @@
     const DEG2RAD = Math.PI / 180;
     const RAD2DEG = 180 / Math.PI;
     
+    // ==================== ASTRONOMICAL CALCULATIONS ====================
     function julianDate(date) {
       const y = date.getUTCFullYear();
       const m = date.getUTCMonth() + 1;
@@ -467,43 +866,45 @@
       return { ra: (ra + 360) % 360, dec, name: planet, color: colors[planet], size: sizes[planet] };
     }
     
-    // Calculate approximate sunset time for a given date and location
-    function getSunsetTime(date, lat, lng) {
+    function getSunTimes(date, lat, lng) {
       const jd = julianDate(date);
-      const n = jd - 2451545.0;
+      const n = Math.floor(jd - 2451545.0 + 0.0008);
       const Jstar = n - lng / 360;
       const M = (357.5291 + 0.98560028 * Jstar) % 360;
       const C = 1.9148 * Math.sin(M * DEG2RAD) + 0.02 * Math.sin(2 * M * DEG2RAD);
       const lambda = (M + C + 180 + 102.9372) % 360;
+      const Jtransit = 2451545.0 + Jstar + 0.0053 * Math.sin(M * DEG2RAD) - 0.0069 * Math.sin(2 * lambda * DEG2RAD);
       const delta = Math.asin(Math.sin(lambda * DEG2RAD) * Math.sin(23.44 * DEG2RAD)) * RAD2DEG;
       const cosOmega = (Math.sin(-0.83 * DEG2RAD) - Math.sin(lat * DEG2RAD) * Math.sin(delta * DEG2RAD)) / 
                        (Math.cos(lat * DEG2RAD) * Math.cos(delta * DEG2RAD));
       
-      if (Math.abs(cosOmega) > 1) return null; // No sunset (polar day/night)
+      if (Math.abs(cosOmega) > 1) return null;
       
       const omega = Math.acos(cosOmega) * RAD2DEG;
-      const Jtransit = 2451545.0 + Jstar + 0.0053 * Math.sin(M * DEG2RAD) - 0.0069 * Math.sin(2 * lambda * DEG2RAD);
+      const Jrise = Jtransit - omega / 360;
       const Jset = Jtransit + omega / 360;
       
-      // Convert Julian date back to Date object
-      const sunsetJD = Jset;
-      const Z = Math.floor(sunsetJD + 0.5);
-      const F = sunsetJD + 0.5 - Z;
-      const A = Math.floor((Z - 1867216.25) / 36524.25);
-      const B = Z + 1 + A - Math.floor(A / 4);
-      const C2 = B + 1524;
-      const D = Math.floor((C2 - 122.1) / 365.25);
-      const E = Math.floor(365.25 * D);
-      const G = Math.floor((C2 - E) / 30.6001);
+      function jdToDate(jd) {
+        const Z = Math.floor(jd + 0.5);
+        const F = jd + 0.5 - Z;
+        const A = Math.floor((Z - 1867216.25) / 36524.25);
+        const B = Z + 1 + A - Math.floor(A / 4);
+        const C = B + 1524;
+        const D = Math.floor((C - 122.1) / 365.25);
+        const E = Math.floor(365.25 * D);
+        const G = Math.floor((C - E) / 30.6001);
+        const day = C - E - Math.floor(30.6001 * G) + F;
+        const month = G < 14 ? G - 1 : G - 13;
+        const year = month > 2 ? D - 4716 : D - 4715;
+        const hours = (day % 1) * 24;
+        return new Date(year, month - 1, Math.floor(day), Math.floor(hours), Math.floor((hours % 1) * 60));
+      }
       
-      const day = C2 - E - Math.floor(30.6001 * G) + F;
-      const month = G < 14 ? G - 1 : G - 13;
-      const year = month > 2 ? D - 4716 : D - 4715;
-      
-      const hours = (day % 1) * 24;
-      const sunsetDate = new Date(year, month - 1, Math.floor(day), Math.floor(hours), Math.floor((hours % 1) * 60));
-      
-      return sunsetDate;
+      return {
+        sunrise: jdToDate(Jrise),
+        sunset: jdToDate(Jset),
+        noon: jdToDate(Jtransit)
+      };
     }
     
     const BRIGHT_STARS = [
@@ -518,27 +919,46 @@
       ['Polaris', 37.95, 89.26, 1.98], ['Castor', 113.65, 31.89, 1.58]
     ];
     
-    const BACKGROUND_STARS = [];
-    for (let i = 0; i < 400; i++) {
-      const az = (Math.sin(i * 567.89) * 0.5 + 0.5) * 360;
-      const alt = (Math.cos(i * 123.45) * 0.5 + 0.5) * 180 - 90;
-      const size = (i % 4) * 0.3 + 0.4;
-      const brightness = 0.3 + (i % 5) * 0.1;
-      BACKGROUND_STARS.push({ az, alt, size, brightness });
+    let BACKGROUND_STARS = [];
+    function generateBackgroundStars(count) {
+      BACKGROUND_STARS = [];
+      for (let i = 0; i < count; i++) {
+        const az = (Math.sin(i * 567.89) * 0.5 + 0.5) * 360;
+        const alt = (Math.cos(i * 123.45) * 0.5 + 0.5) * 180 - 90;
+        const size = (i % 4) * 0.3 + 0.4;
+        const brightness = 0.3 + (i % 5) * 0.1;
+        BACKGROUND_STARS.push({ az, alt, size, brightness });
+      }
     }
+    generateBackgroundStars(400);
     
+    // ==================== APP STATE ====================
     let state = {
       hasLocation: false,
       hasGyroscope: false,
+      hasCompass: false,
       gyroActive: false,
+      compassActive: false,
+      sensorsLocked: false,
       latitude: 51.5,
       longitude: -0.1,
       alpha: 0, beta: 0, gamma: 0,
+      compassHeading: null,
       azimuth: 180,
       altitude: 45,
-      // Time planning
       useCustomTime: false,
-      customTime: new Date()
+      customTime: new Date(),
+      // View settings
+      fov: 80,
+      maxMagnitude: 2.0,
+      showLabels: true,
+      showHorizon: true,
+      showGrid: false,
+      showCrosshair: false,
+      nightMode: false,
+      bgStarCount: 400,
+      // Selected object
+      selectedObject: null
     };
     
     const canvas = document.getElementById('sky-canvas');
@@ -551,6 +971,7 @@
       document.getElementById('ios-note').style.display = 'block';
     }
     
+    // ==================== UI FUNCTIONS ====================
     function updateStatus(msg) {
       document.getElementById('status').textContent = msg;
     }
@@ -558,10 +979,11 @@
     function hideOverlay() {
       document.getElementById('ui-overlay').classList.add('hidden');
       document.getElementById('info-panel').style.display = 'block';
-      document.getElementById('compass').style.display = 'block';
+      document.getElementById('direction-display').style.display = 'block';
       document.getElementById('legend').style.display = 'block';
-      document.getElementById('time-panel').style.display = 'block';
+      document.getElementById('control-panel').style.display = 'block';
       initTimePanel();
+      initControls();
     }
     
     function resizeCanvas() {
@@ -569,11 +991,25 @@
       canvas.height = window.innerHeight;
     }
     
-    // ==================== TIME PANEL ====================
+    // ==================== TAB SWITCHING ====================
+    document.querySelectorAll('.panel-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+    
+    // ==================== TIME CONTROLS ====================
     function initTimePanel() {
       const now = new Date();
       updateTimeInputs(now);
       updateTimeDisplay(now);
+      
+      const scrubber = document.getElementById('time-scrubber');
+      scrubber.value = now.getHours() * 60 + now.getMinutes();
+      updateScrubberDisplay(scrubber.value);
     }
     
     function updateTimeInputs(date) {
@@ -599,11 +1035,15 @@
       }
     }
     
+    function updateScrubberDisplay(minutes) {
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      document.getElementById('scrubber-value').textContent = 
+        `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    }
+    
     function getSelectedTime() {
-      if (state.useCustomTime) {
-        return state.customTime;
-      }
-      return new Date();
+      return state.useCustomTime ? state.customTime : new Date();
     }
     
     function setCustomTime(date) {
@@ -611,6 +1051,9 @@
       state.customTime = date;
       updateTimeInputs(date);
       updateTimeDisplay(date);
+      const mins = date.getHours() * 60 + date.getMinutes();
+      document.getElementById('time-scrubber').value = mins;
+      updateScrubberDisplay(mins);
     }
     
     function setLiveTime() {
@@ -620,113 +1063,219 @@
       updateTimeDisplay(now);
     }
     
-    // Time panel event listeners
+    // Time panel events
     document.getElementById('date-input').addEventListener('change', function() {
       const dateVal = this.value;
       const timeVal = document.getElementById('time-input').value || '12:00';
       const newDate = new Date(dateVal + 'T' + timeVal);
-      if (!isNaN(newDate)) {
-        setCustomTime(newDate);
-      }
+      if (!isNaN(newDate)) setCustomTime(newDate);
     });
     
     document.getElementById('time-input').addEventListener('change', function() {
       const dateVal = document.getElementById('date-input').value || new Date().toISOString().split('T')[0];
       const timeVal = this.value;
       const newDate = new Date(dateVal + 'T' + timeVal);
-      if (!isNaN(newDate)) {
-        setCustomTime(newDate);
-      }
+      if (!isNaN(newDate)) setCustomTime(newDate);
+    });
+    
+    document.getElementById('time-scrubber').addEventListener('input', function() {
+      const minutes = parseInt(this.value);
+      updateScrubberDisplay(minutes);
+      const base = state.useCustomTime ? state.customTime : new Date();
+      const newDate = new Date(base);
+      newDate.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+      state.useCustomTime = true;
+      state.customTime = newDate;
+      updateTimeInputs(newDate);
+      updateTimeDisplay(newDate);
     });
     
     document.getElementById('now-btn').addEventListener('click', setLiveTime);
     
-    document.getElementById('plus1h-btn').addEventListener('click', function() {
-      const base = state.useCustomTime ? state.customTime : new Date();
-      const newDate = new Date(base.getTime() + 60 * 60 * 1000);
-      setCustomTime(newDate);
+    document.getElementById('plus1h-btn').addEventListener('click', () => {
+      const base = getSelectedTime();
+      setCustomTime(new Date(base.getTime() + 60 * 60 * 1000));
     });
     
-    document.getElementById('plus3h-btn').addEventListener('click', function() {
-      const base = state.useCustomTime ? state.customTime : new Date();
-      const newDate = new Date(base.getTime() + 3 * 60 * 60 * 1000);
-      setCustomTime(newDate);
+    document.getElementById('plus3h-btn').addEventListener('click', () => {
+      const base = getSelectedTime();
+      setCustomTime(new Date(base.getTime() + 3 * 60 * 60 * 1000));
     });
     
-    document.getElementById('sunset-btn').addEventListener('click', function() {
-      const today = new Date();
-      const sunset = getSunsetTime(today, state.latitude, state.longitude);
-      if (sunset) {
-        setCustomTime(sunset);
-      } else {
-        alert('Cannot calculate sunset for this location/date');
+    document.getElementById('plus6h-btn').addEventListener('click', () => {
+      const base = getSelectedTime();
+      setCustomTime(new Date(base.getTime() + 6 * 60 * 60 * 1000));
+    });
+    
+    document.getElementById('sunset-btn').addEventListener('click', () => {
+      const times = getSunTimes(new Date(), state.latitude, state.longitude);
+      if (times) setCustomTime(times.sunset);
+    });
+    
+    document.getElementById('sunrise-btn').addEventListener('click', () => {
+      const times = getSunTimes(new Date(), state.latitude, state.longitude);
+      if (times) setCustomTime(times.sunrise);
+    });
+    
+    document.getElementById('midnight-btn').addEventListener('click', () => {
+      const d = new Date();
+      d.setHours(24, 0, 0, 0);
+      setCustomTime(d);
+    });
+    
+    document.getElementById('golden-btn').addEventListener('click', () => {
+      const times = getSunTimes(new Date(), state.latitude, state.longitude);
+      if (times) {
+        const golden = new Date(times.sunset.getTime() - 60 * 60 * 1000);
+        setCustomTime(golden);
       }
     });
     
-    // ==================== LOCATION BUTTON ====================
+    // ==================== FIND OBJECT CONTROLS ====================
+    function findObject(name) {
+      const time = getSelectedTime();
+      const jd = julianDate(time);
+      const lst = localSiderealTime(jd, state.longitude);
+      let obj = null;
+      
+      if (name === 'Sun') obj = getSunPosition(jd);
+      else if (name === 'Moon') obj = getMoonPosition(jd);
+      else if (['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'].includes(name)) {
+        obj = getPlanetPosition(jd, name);
+      } else {
+        const star = BRIGHT_STARS.find(s => s[0] === name);
+        if (star) {
+          obj = { ra: star[1], dec: star[2], name: star[0] };
+        }
+      }
+      
+      if (obj) {
+        const { alt, az } = raDecToAltAz(obj.ra, obj.dec, state.latitude, lst);
+        state.azimuth = az;
+        state.altitude = alt;
+        state.selectedObject = name;
+        showObjectInfo(name, alt, az);
+      }
+    }
+    
+    function showObjectInfo(name, alt, az) {
+      document.getElementById('object-info').style.display = 'block';
+      document.getElementById('info-object-name').textContent = name;
+      document.getElementById('info-altitude').textContent = `${alt.toFixed(1)} deg`;
+      document.getElementById('info-azimuth').textContent = `${az.toFixed(1)} deg`;
+      
+      const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      document.getElementById('info-direction').textContent = dirs[Math.round(az / 45) % 8];
+      document.getElementById('info-visibility').textContent = alt > 0 ? 'Above horizon' : 'Below horizon';
+    }
+    
+    document.querySelectorAll('[data-find]').forEach(btn => {
+      btn.addEventListener('click', () => findObject(btn.dataset.find));
+    });
+    
+    // ==================== VIEW CONTROLS ====================
+    function initControls() {
+      document.getElementById('fov-slider').addEventListener('input', function() {
+        state.fov = parseInt(this.value);
+        document.getElementById('fov-value').textContent = state.fov + ' deg';
+      });
+      
+      document.getElementById('mag-slider').addEventListener('input', function() {
+        state.maxMagnitude = parseFloat(this.value);
+        document.getElementById('mag-value').textContent = state.maxMagnitude.toFixed(1);
+      });
+      
+      document.getElementById('bg-stars-slider').addEventListener('input', function() {
+        state.bgStarCount = parseInt(this.value);
+        generateBackgroundStars(state.bgStarCount);
+      });
+      
+      document.getElementById('view-north').addEventListener('click', () => { state.azimuth = 0; state.altitude = 20; });
+      document.getElementById('view-south').addEventListener('click', () => { state.azimuth = 180; state.altitude = 20; });
+      document.getElementById('view-east').addEventListener('click', () => { state.azimuth = 90; state.altitude = 20; });
+      document.getElementById('view-west').addEventListener('click', () => { state.azimuth = 270; state.altitude = 20; });
+      document.getElementById('view-zenith').addEventListener('click', () => { state.altitude = 90; });
+      document.getElementById('view-horizon').addEventListener('click', () => { state.altitude = 0; });
+      
+      setupToggle('toggle-night', (active) => {
+        state.nightMode = active;
+        document.body.classList.toggle('night-mode', active);
+      });
+      
+      setupToggle('toggle-crosshair', (active) => {
+        state.showCrosshair = active;
+        document.getElementById('crosshair').classList.toggle('visible', active);
+      });
+      
+      setupToggle('toggle-grid', (active) => { state.showGrid = active; });
+      setupToggle('toggle-labels', (active) => { state.showLabels = active; }, true);
+      setupToggle('toggle-horizon', (active) => { state.showHorizon = active; }, true);
+      setupToggle('toggle-gyro-lock', (active) => { state.sensorsLocked = active; });
+    }
+    
+    function setupToggle(id, callback, initiallyActive = false) {
+      const toggle = document.getElementById(id);
+      if (initiallyActive) toggle.classList.add('active');
+      toggle.addEventListener('click', () => {
+        toggle.classList.toggle('active');
+        callback(toggle.classList.contains('active'));
+      });
+    }
+    
+    // ==================== LOCATION PERMISSION ====================
     const locationBtn = document.getElementById('location-btn');
     locationBtn.addEventListener('click', handleLocationClick);
-    locationBtn.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      handleLocationClick();
-    });
+    locationBtn.addEventListener('touchend', function(e) { e.preventDefault(); handleLocationClick(); });
     
     async function handleLocationClick() {
       const btn = document.getElementById('location-btn');
       if (btn.disabled) return;
       
       btn.disabled = true;
-      btn.textContent = '📍 Requesting...';
+      btn.textContent = 'Requesting...';
       updateStatus('Please allow location access...');
       
       try {
         const position = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 15000
-          });
+          navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 15000 });
         });
         
         state.latitude = position.coords.latitude;
         state.longitude = position.coords.longitude;
         state.hasLocation = true;
         
-        document.getElementById('loc-status').textContent = '✅';
-        document.getElementById('loc-display').textContent = 
-          `${state.latitude.toFixed(2)}°, ${state.longitude.toFixed(2)}°`;
-        btn.textContent = '📍 Location Granted!';
+        document.getElementById('loc-status').textContent = 'OK';
+        document.getElementById('loc-display').textContent = `${state.latitude.toFixed(2)}, ${state.longitude.toFixed(2)}`;
+        btn.textContent = 'Location Granted';
         btn.classList.add('success');
-        updateStatus('Great! Now enable gyroscope for motion tracking.');
-        
+        updateStatus('Location acquired. Now enable sensors.');
       } catch (e) {
-        document.getElementById('loc-status').textContent = '⚠️';
-        btn.textContent = '📍 Using Default Location';
+        document.getElementById('loc-status').textContent = 'Default';
+        btn.textContent = 'Using Default Location';
         btn.classList.add('warning');
         state.hasLocation = true;
-        updateStatus('Using London as default location.');
+        updateStatus('Using default location (London).');
       }
       
-      document.getElementById('gyro-btn').style.display = 'block';
+      document.getElementById('sensor-btn').style.display = 'block';
     }
     
-    // ==================== GYROSCOPE BUTTON ====================
-    const gyroBtn = document.getElementById('gyro-btn');
-    gyroBtn.addEventListener('click', handleGyroClick);
-    gyroBtn.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      handleGyroClick();
-    });
+    // ==================== SENSOR PERMISSION (Gyroscope + Compass) ====================
+    const sensorBtn = document.getElementById('sensor-btn');
+    sensorBtn.addEventListener('click', handleSensorClick);
+    sensorBtn.addEventListener('touchend', function(e) { e.preventDefault(); handleSensorClick(); });
     
-    async function handleGyroClick() {
-      const btn = document.getElementById('gyro-btn');
+    async function handleSensorClick() {
+      const btn = document.getElementById('sensor-btn');
       if (btn.disabled) return;
       
       btn.disabled = true;
-      btn.textContent = '📱 Requesting...';
-      updateStatus('Please allow motion access...');
+      btn.textContent = 'Requesting...';
+      updateStatus('Please allow motion and orientation access...');
       
       let permissionGranted = false;
       
+      // iOS 13+ requires explicit permission request
       if (typeof DeviceOrientationEvent !== 'undefined' && 
           typeof DeviceOrientationEvent.requestPermission === 'function') {
         try {
@@ -736,69 +1285,96 @@
           console.error('Permission request failed:', e);
         }
       } else {
+        // Android and older iOS - permission not required
         permissionGranted = true;
       }
       
       if (permissionGranted) {
+        // Listen for orientation events (includes both gyro and compass data)
         window.addEventListener('deviceorientation', handleOrientation, true);
-        window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+        window.addEventListener('deviceorientationabsolute', handleOrientationAbsolute, true);
         
-        await new Promise(r => setTimeout(r, 800));
+        // Wait to see if we actually get data
+        await new Promise(r => setTimeout(r, 1000));
         
+        let statusParts = [];
         if (state.gyroActive) {
           state.hasGyroscope = true;
-          document.getElementById('gyro-status').textContent = '✅';
-          btn.textContent = '📱 Gyroscope Active!';
+          statusParts.push('Gyro');
+        }
+        if (state.compassActive) {
+          state.hasCompass = true;
+          statusParts.push('Compass');
+        }
+        
+        if (statusParts.length > 0) {
+          document.getElementById('gyro-status').textContent = 'OK';
+          btn.textContent = 'Sensors Active';
           btn.classList.add('success');
-          updateStatus('Gyroscope working! Tap Start to begin.');
+          updateStatus(`${statusParts.join(' + ')} working. Ready to start.`);
         } else {
-          document.getElementById('gyro-status').textContent = '⚠️';
-          btn.textContent = '📱 Using Touch Controls';
+          document.getElementById('gyro-status').textContent = 'N/A';
+          btn.textContent = 'Using Touch Controls';
           btn.classList.add('warning');
-          updateStatus('No gyro data. Drag to look around.');
+          updateStatus('No sensor data. Use touch to navigate.');
         }
       } else {
-        document.getElementById('gyro-status').textContent = '❌';
-        btn.textContent = '📱 Permission Denied';
+        document.getElementById('gyro-status').textContent = 'Denied';
+        btn.textContent = 'Permission Denied';
         btn.classList.add('warning');
-        updateStatus('Motion access denied. Drag to look around.');
+        updateStatus('Sensor access denied. Use touch to navigate.');
       }
       
       document.getElementById('start-btn').style.display = 'block';
     }
     
     function handleOrientation(event) {
-      if (event.alpha !== null || event.beta !== null || event.gamma !== null) {
+      if (state.sensorsLocked) return;
+      
+      // Check if we have gyro data
+      if (event.beta !== null && event.gamma !== null) {
         state.gyroActive = true;
         state.alpha = event.alpha || 0;
         state.beta = event.beta || 0;
         state.gamma = event.gamma || 0;
         
-        // Calculate compass heading
-        if (event.webkitCompassHeading !== undefined) {
+        // FIXED: Calculate altitude from beta
+        // When phone is vertical (beta=90), looking at horizon (alt=0)
+        // When tilting phone up (beta increases past 90), looking up (alt increases)
+        // When tilting phone down (beta decreases below 90), looking down (alt decreases)
+        state.altitude = state.beta - 90;
+        state.altitude = Math.max(-90, Math.min(90, state.altitude));
+        
+        // Check for compass data (iOS provides webkitCompassHeading)
+        if (event.webkitCompassHeading !== undefined && event.webkitCompassHeading !== null) {
+          state.compassActive = true;
+          state.compassHeading = event.webkitCompassHeading;
           state.azimuth = event.webkitCompassHeading;
+        } else if (event.absolute) {
+          // Some browsers provide absolute orientation
+          state.compassActive = true;
+          state.azimuth = (360 - state.alpha) % 360;
         } else {
+          // Fallback to relative orientation
           state.azimuth = (360 - state.alpha) % 360;
         }
-        
-        // FIXED: Calculate altitude from phone tilt
-        // beta = 0 when phone flat (looking at zenith, alt=90)
-        // beta = 90 when phone vertical (looking at horizon, alt=0)
-        // beta = 180 when phone flat upside down (looking at nadir, alt=-90)
-        state.altitude = 90 - state.beta;
-        
-        // Clamp to valid range
-        state.altitude = Math.max(-90, Math.min(90, state.altitude));
+      }
+    }
+    
+    function handleOrientationAbsolute(event) {
+      // This event provides compass-corrected orientation on Android
+      if (state.sensorsLocked) return;
+      
+      if (event.alpha !== null && event.absolute) {
+        state.compassActive = true;
+        state.azimuth = (360 - event.alpha) % 360;
       }
     }
     
     // ==================== START BUTTON ====================
     const startBtn = document.getElementById('start-btn');
     startBtn.addEventListener('click', handleStartClick);
-    startBtn.addEventListener('touchend', function(e) {
-      e.preventDefault();
-      handleStartClick();
-    });
+    startBtn.addEventListener('touchend', function(e) { e.preventDefault(); handleStartClick(); });
     
     function handleStartClick() {
       hideOverlay();
@@ -816,12 +1392,12 @@
     
     canvas.addEventListener('touchmove', (e) => {
       if (!isDragging) return;
-      if (state.hasGyroscope && state.gyroActive) return;
+      if (state.hasGyroscope && state.gyroActive && !state.sensorsLocked) return;
       
       const dx = e.touches[0].clientX - touchStart.x;
       const dy = e.touches[0].clientY - touchStart.y;
       state.azimuth = (state.azimuth - dx * 0.5 + 360) % 360;
-      state.altitude = Math.max(-90, Math.min(90, state.altitude + dy * 0.3));
+      state.altitude = Math.max(-90, Math.min(90, state.altitude - dy * 0.3));
       touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     }, { passive: true });
     
@@ -837,7 +1413,7 @@
       const dx = e.clientX - touchStart.x;
       const dy = e.clientY - touchStart.y;
       state.azimuth = (state.azimuth - dx * 0.3 + 360) % 360;
-      state.altitude = Math.max(-90, Math.min(90, state.altitude + dy * 0.3));
+      state.altitude = Math.max(-90, Math.min(90, state.altitude - dy * 0.3));
       touchStart = { x: e.clientX, y: e.clientY };
     });
     
@@ -851,8 +1427,8 @@
       if (dAz < -180) dAz += 360;
       
       const dAlt = objAlt - viewAlt;
-      const hFov = 80;
-      const vFov = 80;
+      const hFov = state.fov;
+      const vFov = state.fov;
       
       const x = canvas.width / 2 + (dAz / hFov) * canvas.width;
       const y = canvas.height / 2 - (dAlt / vFov) * canvas.height;
@@ -868,30 +1444,35 @@
       if (!pos.inView) return;
       
       const gradient = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, obj.size * 2.5);
-      gradient.addColorStop(0, obj.color);
-      gradient.addColorStop(0.4, obj.color + '88');
+      const color = state.nightMode ? '#ff6666' : obj.color;
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(0.4, color + '88');
       gradient.addColorStop(1, 'transparent');
       ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, obj.size * 2.5, 0, Math.PI * 2);
       ctx.fill();
       
-      ctx.fillStyle = obj.color;
+      ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, obj.size / 2, 0, Math.PI * 2);
       ctx.fill();
       
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 13px -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = '#000';
-      ctx.shadowBlur = 4;
-      ctx.fillText(obj.name, pos.x, pos.y + obj.size + 14);
-      ctx.shadowBlur = 0;
+      if (state.showLabels) {
+        ctx.fillStyle = state.nightMode ? '#ff8888' : '#fff';
+        ctx.font = 'bold 13px -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = '#000';
+        ctx.shadowBlur = 4;
+        ctx.fillText(obj.name, pos.x, pos.y + obj.size + 14);
+        ctx.shadowBlur = 0;
+      }
     }
     
     function drawStar(star, viewAz, viewAlt, lst) {
       const [name, ra, dec, mag] = star;
+      if (mag > state.maxMagnitude) return;
+      
       const { alt, az } = raDecToAltAz(ra, dec, state.latitude, lst);
       const pos = getScreenPosition(az, alt, viewAz, viewAlt);
       
@@ -900,13 +1481,17 @@
       const size = Math.max(1.5, 4.5 - mag);
       const brightness = Math.min(255, Math.floor(255 * (2.5 - mag) / 3.5));
       
-      ctx.fillStyle = `rgb(${brightness}, ${brightness}, ${Math.min(255, brightness + 30)})`;
+      if (state.nightMode) {
+        ctx.fillStyle = `rgb(${brightness}, ${Math.floor(brightness*0.3)}, ${Math.floor(brightness*0.3)})`;
+      } else {
+        ctx.fillStyle = `rgb(${brightness}, ${brightness}, ${Math.min(255, brightness + 30)})`;
+      }
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, size, 0, Math.PI * 2);
       ctx.fill();
       
-      if (mag < 1.0) {
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      if (state.showLabels && mag < 1.0) {
+        ctx.fillStyle = state.nightMode ? 'rgba(255,150,150,0.8)' : 'rgba(255,255,255,0.8)';
         ctx.font = '11px -apple-system, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(name, pos.x, pos.y + size + 12);
@@ -915,29 +1500,69 @@
     
     function drawBackgroundStar(star, viewAz, viewAlt) {
       const pos = getScreenPosition(star.az, star.alt, viewAz, viewAlt);
-      
       if (!pos.inView) return;
       
-      ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+      if (state.nightMode) {
+        ctx.fillStyle = `rgba(255, 100, 100, ${star.brightness * 0.5})`;
+      } else {
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+      }
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, star.size, 0, Math.PI * 2);
       ctx.fill();
     }
     
     function drawBackground() {
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      gradient.addColorStop(0, '#05051a');
-      gradient.addColorStop(0.5, '#0a0a2e');
-      gradient.addColorStop(1, '#12122a');
+      let gradient;
+      if (state.nightMode) {
+        gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#1a0505');
+        gradient.addColorStop(0.5, '#200808');
+        gradient.addColorStop(1, '#150404');
+      } else {
+        gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#05051a');
+        gradient.addColorStop(0.5, '#0a0a2e');
+        gradient.addColorStop(1, '#12122a');
+      }
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
+    function drawGrid(viewAz, viewAlt) {
+      if (!state.showGrid) return;
+      
+      ctx.strokeStyle = state.nightMode ? 'rgba(255,100,100,0.2)' : 'rgba(100,150,255,0.2)';
+      ctx.lineWidth = 1;
+      
+      for (let alt = -90; alt <= 90; alt += 15) {
+        ctx.beginPath();
+        for (let az = 0; az <= 360; az += 5) {
+          const pos = getScreenPosition(az, alt, viewAz, viewAlt);
+          if (az === 0) ctx.moveTo(pos.x, pos.y);
+          else ctx.lineTo(pos.x, pos.y);
+        }
+        ctx.stroke();
+      }
+      
+      for (let az = 0; az < 360; az += 30) {
+        ctx.beginPath();
+        for (let alt = -90; alt <= 90; alt += 5) {
+          const pos = getScreenPosition(az, alt, viewAz, viewAlt);
+          if (alt === -90) ctx.moveTo(pos.x, pos.y);
+          else ctx.lineTo(pos.x, pos.y);
+        }
+        ctx.stroke();
+      }
+    }
+    
     function drawHorizonLine(viewAlt) {
-      const horizonY = canvas.height / 2 + (viewAlt / 90) * canvas.height;
+      if (!state.showHorizon) return;
+      
+      const horizonY = canvas.height / 2 + (viewAlt / state.fov) * canvas.height;
       
       if (horizonY > 0 && horizonY < canvas.height) {
-        ctx.strokeStyle = 'rgba(70, 130, 180, 0.4)';
+        ctx.strokeStyle = state.nightMode ? 'rgba(255,100,100,0.4)' : 'rgba(70, 130, 180, 0.4)';
         ctx.lineWidth = 2;
         ctx.setLineDash([15, 10]);
         ctx.beginPath();
@@ -946,10 +1571,10 @@
         ctx.stroke();
         ctx.setLineDash([]);
         
-        ctx.fillStyle = 'rgba(70, 130, 180, 0.7)';
+        ctx.fillStyle = state.nightMode ? 'rgba(255,100,100,0.7)' : 'rgba(70, 130, 180, 0.7)';
         ctx.font = '12px -apple-system, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('─── Horizon ───', canvas.width / 2, horizonY - 8);
+        ctx.fillText('--- Horizon ---', canvas.width / 2, horizonY - 8);
       }
     }
     
@@ -969,27 +1594,38 @@
         if (dAz > 180) dAz -= 360;
         if (dAz < -180) dAz += 360;
         
-        if (Math.abs(dAz) < 50) {
-          const x = canvas.width / 2 + (dAz / 80) * canvas.width;
-          ctx.fillStyle = dir.color;
-          ctx.fillText(dir.label, x, canvas.height - 160);
+        if (Math.abs(dAz) < state.fov * 0.6) {
+          const x = canvas.width / 2 + (dAz / state.fov) * canvas.width;
+          ctx.fillStyle = state.nightMode ? '#ff6666' : dir.color;
+          ctx.fillText(dir.label, x, canvas.height - 220);
         }
       });
     }
     
     function updateUI() {
-      const displayTime = getSelectedTime();
+      document.getElementById('az-display').textContent = `${state.azimuth.toFixed(0)} deg`;
+      document.getElementById('alt-display').textContent = `${state.altitude.toFixed(0)} deg`;
       
-      document.getElementById('az-display').textContent = `${state.azimuth.toFixed(0)}°`;
-      document.getElementById('alt-display').textContent = `${state.altitude.toFixed(0)}°`;
-      document.getElementById('gyro-display').textContent = state.gyroActive ? '✓ Active' : '✗ Inactive';
+      let sensorStatus = [];
+      if (state.gyroActive) sensorStatus.push('Gyro');
+      if (state.compassActive) sensorStatus.push('Compass');
+      if (state.sensorsLocked) sensorStatus.push('(Locked)');
+      document.getElementById('sensor-display').textContent = sensorStatus.length > 0 ? sensorStatus.join(' + ') : 'Off';
+      
+      const compassStatus = document.getElementById('compass-status');
+      if (state.compassHeading !== null) {
+        compassStatus.textContent = `True heading: ${state.compassHeading.toFixed(0)} deg`;
+      } else if (state.compassActive) {
+        compassStatus.textContent = 'Magnetic heading active';
+      } else {
+        compassStatus.textContent = '';
+      }
       
       const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
       const dirIndex = Math.round(state.azimuth / 45) % 8;
       document.getElementById('direction').textContent = dirs[dirIndex];
-      document.getElementById('degrees').textContent = `${Math.round(state.azimuth)}°`;
+      document.getElementById('degrees').textContent = `${Math.round(state.azimuth)} deg`;
       
-      // Update time display
       if (!state.useCustomTime) {
         updateTimeDisplay(new Date());
       }
@@ -1006,6 +1642,7 @@
         drawBackgroundStar(star, state.azimuth, state.altitude);
       });
       
+      drawGrid(state.azimuth, state.altitude);
       drawHorizonLine(state.altitude);
       drawCardinalDirections(state.azimuth);
       
