@@ -76,7 +76,7 @@
     .label { color: #888; }
     #compass {
       position: fixed;
-      bottom: 20px;
+      bottom: 140px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0,0,30,0.8);
@@ -90,7 +90,7 @@
     }
     #legend {
       position: fixed;
-      bottom: 20px;
+      top: 10px;
       right: 10px;
       background: rgba(0,0,30,0.8);
       padding: 12px 16px;
@@ -126,6 +126,154 @@
       margin: 15px 0;
       font-size: 12px;
       max-width: 300px;
+    }
+    
+    /* Time Control Panel */
+    #time-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,30,0.9);
+      padding: 15px;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    @media (min-width: 768px) {
+      #time-panel {
+        right: auto;
+        width: 320px;
+        border-radius: 0 10px 0 0;
+        border-right: 1px solid rgba(255,255,255,0.1);
+      }
+      #compass {
+        bottom: 20px;
+      }
+    }
+    
+    .time-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .time-panel-title {
+      font-size: 14px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .time-mode-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background: #22c55e;
+      color: white;
+    }
+    
+    .time-mode-badge.planning {
+      background: #f59e0b;
+    }
+    
+    .time-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .time-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .time-input-group {
+      flex: 1;
+    }
+    
+    .time-input-group label {
+      display: block;
+      font-size: 10px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    
+    .time-input-group input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    .time-input-group input:focus {
+      outline: none;
+      border-color: #4a6cf7;
+    }
+    
+    .time-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 5px;
+    }
+    
+    .time-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      touch-action: manipulation;
+    }
+    
+    .time-btn.now {
+      background: #22c55e;
+      color: white;
+    }
+    
+    .time-btn.now:hover {
+      background: #16a34a;
+    }
+    
+    .time-btn.offset {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .time-btn.offset:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .selected-time-display {
+      text-align: center;
+      padding: 8px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+    
+    .selected-time-display .time-big {
+      font-size: 20px;
+      font-weight: bold;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .selected-time-display .date-small {
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
     }
   </style>
 </head>
@@ -166,7 +314,6 @@
   </div>
   
   <div id="info-panel" style="display:none;">
-    <div><span class="label">Time:</span> <span id="time-display">--</span></div>
     <div><span class="label">Location:</span> <span id="loc-display">--</span></div>
     <div><span class="label">Facing:</span> <span id="az-display">--</span></div>
     <div><span class="label">Elevation:</span> <span id="alt-display">--</span></div>
@@ -182,6 +329,41 @@
     <div class="legend-item"><div class="legend-dot" style="background:#E8E8E8;"></div> Moon</div>
     <div class="legend-item"><div class="legend-dot" style="background:#FFA500;"></div> Planets</div>
     <div class="legend-item"><div class="legend-dot" style="background:#FFFFFF;"></div> Stars</div>
+  </div>
+  
+  <!-- Time Control Panel -->
+  <div id="time-panel" style="display:none;">
+    <div class="time-panel-header">
+      <div class="time-panel-title">
+        📷 Photo Planner
+        <span class="time-mode-badge" id="time-mode-badge">LIVE</span>
+      </div>
+    </div>
+    
+    <div class="time-controls">
+      <div class="time-row">
+        <div class="time-input-group">
+          <label>Date</label>
+          <input type="date" id="date-input">
+        </div>
+        <div class="time-input-group">
+          <label>Time</label>
+          <input type="time" id="time-input">
+        </div>
+      </div>
+      
+      <div class="time-buttons">
+        <button class="time-btn now" id="now-btn" type="button">⏱ Now</button>
+        <button class="time-btn offset" id="plus1h-btn" type="button">+1h</button>
+        <button class="time-btn offset" id="plus3h-btn" type="button">+3h</button>
+        <button class="time-btn offset" id="sunset-btn" type="button">🌅 Sunset</button>
+      </div>
+      
+      <div class="selected-time-display">
+        <div class="time-big" id="display-time">--:--:--</div>
+        <div class="date-small" id="display-date">----</div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -285,6 +467,45 @@
       return { ra: (ra + 360) % 360, dec, name: planet, color: colors[planet], size: sizes[planet] };
     }
     
+    // Calculate approximate sunset time for a given date and location
+    function getSunsetTime(date, lat, lng) {
+      const jd = julianDate(date);
+      const n = jd - 2451545.0;
+      const Jstar = n - lng / 360;
+      const M = (357.5291 + 0.98560028 * Jstar) % 360;
+      const C = 1.9148 * Math.sin(M * DEG2RAD) + 0.02 * Math.sin(2 * M * DEG2RAD);
+      const lambda = (M + C + 180 + 102.9372) % 360;
+      const delta = Math.asin(Math.sin(lambda * DEG2RAD) * Math.sin(23.44 * DEG2RAD)) * RAD2DEG;
+      const cosOmega = (Math.sin(-0.83 * DEG2RAD) - Math.sin(lat * DEG2RAD) * Math.sin(delta * DEG2RAD)) / 
+                       (Math.cos(lat * DEG2RAD) * Math.cos(delta * DEG2RAD));
+      
+      if (Math.abs(cosOmega) > 1) return null; // No sunset (polar day/night)
+      
+      const omega = Math.acos(cosOmega) * RAD2DEG;
+      const Jtransit = 2451545.0 + Jstar + 0.0053 * Math.sin(M * DEG2RAD) - 0.0069 * Math.sin(2 * lambda * DEG2RAD);
+      const Jset = Jtransit + omega / 360;
+      
+      // Convert Julian date back to Date object
+      const sunsetJD = Jset;
+      const Z = Math.floor(sunsetJD + 0.5);
+      const F = sunsetJD + 0.5 - Z;
+      const A = Math.floor((Z - 1867216.25) / 36524.25);
+      const B = Z + 1 + A - Math.floor(A / 4);
+      const C2 = B + 1524;
+      const D = Math.floor((C2 - 122.1) / 365.25);
+      const E = Math.floor(365.25 * D);
+      const G = Math.floor((C2 - E) / 30.6001);
+      
+      const day = C2 - E - Math.floor(30.6001 * G) + F;
+      const month = G < 14 ? G - 1 : G - 13;
+      const year = month > 2 ? D - 4716 : D - 4715;
+      
+      const hours = (day % 1) * 24;
+      const sunsetDate = new Date(year, month - 1, Math.floor(day), Math.floor(hours), Math.floor((hours % 1) * 60));
+      
+      return sunsetDate;
+    }
+    
     const BRIGHT_STARS = [
       ['Sirius', 101.29, -16.72, -1.46], ['Canopus', 95.99, -52.70, -0.72],
       ['Arcturus', 213.92, 19.18, -0.05], ['Vega', 279.23, 38.78, 0.03],
@@ -297,6 +518,15 @@
       ['Polaris', 37.95, 89.26, 1.98], ['Castor', 113.65, 31.89, 1.58]
     ];
     
+    const BACKGROUND_STARS = [];
+    for (let i = 0; i < 400; i++) {
+      const az = (Math.sin(i * 567.89) * 0.5 + 0.5) * 360;
+      const alt = (Math.cos(i * 123.45) * 0.5 + 0.5) * 180 - 90;
+      const size = (i % 4) * 0.3 + 0.4;
+      const brightness = 0.3 + (i % 5) * 0.1;
+      BACKGROUND_STARS.push({ az, alt, size, brightness });
+    }
+    
     let state = {
       hasLocation: false,
       hasGyroscope: false,
@@ -305,7 +535,10 @@
       longitude: -0.1,
       alpha: 0, beta: 0, gamma: 0,
       azimuth: 180,
-      altitude: 45
+      altitude: 45,
+      // Time planning
+      useCustomTime: false,
+      customTime: new Date()
     };
     
     const canvas = document.getElementById('sky-canvas');
@@ -327,12 +560,108 @@
       document.getElementById('info-panel').style.display = 'block';
       document.getElementById('compass').style.display = 'block';
       document.getElementById('legend').style.display = 'block';
+      document.getElementById('time-panel').style.display = 'block';
+      initTimePanel();
     }
     
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
+    
+    // ==================== TIME PANEL ====================
+    function initTimePanel() {
+      const now = new Date();
+      updateTimeInputs(now);
+      updateTimeDisplay(now);
+    }
+    
+    function updateTimeInputs(date) {
+      const dateStr = date.toISOString().split('T')[0];
+      const timeStr = date.toTimeString().slice(0, 5);
+      document.getElementById('date-input').value = dateStr;
+      document.getElementById('time-input').value = timeStr;
+    }
+    
+    function updateTimeDisplay(date) {
+      document.getElementById('display-time').textContent = date.toLocaleTimeString();
+      document.getElementById('display-date').textContent = date.toLocaleDateString(undefined, { 
+        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' 
+      });
+      
+      const badge = document.getElementById('time-mode-badge');
+      if (state.useCustomTime) {
+        badge.textContent = 'PLANNING';
+        badge.classList.add('planning');
+      } else {
+        badge.textContent = 'LIVE';
+        badge.classList.remove('planning');
+      }
+    }
+    
+    function getSelectedTime() {
+      if (state.useCustomTime) {
+        return state.customTime;
+      }
+      return new Date();
+    }
+    
+    function setCustomTime(date) {
+      state.useCustomTime = true;
+      state.customTime = date;
+      updateTimeInputs(date);
+      updateTimeDisplay(date);
+    }
+    
+    function setLiveTime() {
+      state.useCustomTime = false;
+      const now = new Date();
+      updateTimeInputs(now);
+      updateTimeDisplay(now);
+    }
+    
+    // Time panel event listeners
+    document.getElementById('date-input').addEventListener('change', function() {
+      const dateVal = this.value;
+      const timeVal = document.getElementById('time-input').value || '12:00';
+      const newDate = new Date(dateVal + 'T' + timeVal);
+      if (!isNaN(newDate)) {
+        setCustomTime(newDate);
+      }
+    });
+    
+    document.getElementById('time-input').addEventListener('change', function() {
+      const dateVal = document.getElementById('date-input').value || new Date().toISOString().split('T')[0];
+      const timeVal = this.value;
+      const newDate = new Date(dateVal + 'T' + timeVal);
+      if (!isNaN(newDate)) {
+        setCustomTime(newDate);
+      }
+    });
+    
+    document.getElementById('now-btn').addEventListener('click', setLiveTime);
+    
+    document.getElementById('plus1h-btn').addEventListener('click', function() {
+      const base = state.useCustomTime ? state.customTime : new Date();
+      const newDate = new Date(base.getTime() + 60 * 60 * 1000);
+      setCustomTime(newDate);
+    });
+    
+    document.getElementById('plus3h-btn').addEventListener('click', function() {
+      const base = state.useCustomTime ? state.customTime : new Date();
+      const newDate = new Date(base.getTime() + 3 * 60 * 60 * 1000);
+      setCustomTime(newDate);
+    });
+    
+    document.getElementById('sunset-btn').addEventListener('click', function() {
+      const today = new Date();
+      const sunset = getSunsetTime(today, state.latitude, state.longitude);
+      if (sunset) {
+        setCustomTime(sunset);
+      } else {
+        alert('Cannot calculate sunset for this location/date');
+      }
+    });
     
     // ==================== LOCATION BUTTON ====================
     const locationBtn = document.getElementById('location-btn');
@@ -398,7 +727,6 @@
       
       let permissionGranted = false;
       
-      // iOS 13+ requires explicit permission request
       if (typeof DeviceOrientationEvent !== 'undefined' && 
           typeof DeviceOrientationEvent.requestPermission === 'function') {
         try {
@@ -408,16 +736,13 @@
           console.error('Permission request failed:', e);
         }
       } else {
-        // Android and older iOS - permission not required
         permissionGranted = true;
       }
       
       if (permissionGranted) {
-        // Start listening for orientation events
         window.addEventListener('deviceorientation', handleOrientation, true);
         window.addEventListener('deviceorientationabsolute', handleOrientation, true);
         
-        // Wait to see if we actually get data
         await new Promise(r => setTimeout(r, 800));
         
         if (state.gyroActive) {
@@ -456,8 +781,14 @@
           state.azimuth = (360 - state.alpha) % 360;
         }
         
-        // Calculate altitude from phone tilt
-        state.altitude = Math.max(-90, Math.min(90, state.beta));
+        // FIXED: Calculate altitude from phone tilt
+        // beta = 0 when phone flat (looking at zenith, alt=90)
+        // beta = 90 when phone vertical (looking at horizon, alt=0)
+        // beta = 180 when phone flat upside down (looking at nadir, alt=-90)
+        state.altitude = 90 - state.beta;
+        
+        // Clamp to valid range
+        state.altitude = Math.max(-90, Math.min(90, state.altitude));
       }
     }
     
@@ -474,7 +805,7 @@
       requestAnimationFrame(animate);
     }
     
-    // ==================== TOUCH/MOUSE CONTROLS FOR CANVAS ====================
+    // ==================== TOUCH/MOUSE CONTROLS ====================
     let touchStart = { x: 0, y: 0 };
     let isDragging = false;
     
@@ -582,6 +913,17 @@
       }
     }
     
+    function drawBackgroundStar(star, viewAz, viewAlt) {
+      const pos = getScreenPosition(star.az, star.alt, viewAz, viewAlt);
+      
+      if (!pos.inView) return;
+      
+      ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, star.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
     function drawBackground() {
       const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
       gradient.addColorStop(0, '#05051a');
@@ -589,19 +931,6 @@
       gradient.addColorStop(1, '#12122a');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Background stars
-      ctx.fillStyle = 'rgba(255,255,255,0.4)';
-      for (let i = 0; i < 300; i++) {
-        const seed1 = Math.sin(i * 567.89) * 10000;
-        const seed2 = Math.cos(i * 123.45) * 10000;
-        const x = ((seed1 % 1000) / 1000 * 3 + state.azimuth / 120) % 1 * canvas.width;
-        const y = ((seed2 % 1000) / 1000 * 3 + state.altitude / 180) % 1 * canvas.height;
-        const size = (i % 4) * 0.3 + 0.3;
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
-        ctx.fill();
-      }
     }
     
     function drawHorizonLine(viewAlt) {
@@ -643,14 +972,14 @@
         if (Math.abs(dAz) < 50) {
           const x = canvas.width / 2 + (dAz / 80) * canvas.width;
           ctx.fillStyle = dir.color;
-          ctx.fillText(dir.label, x, canvas.height - 50);
+          ctx.fillText(dir.label, x, canvas.height - 160);
         }
       });
     }
     
     function updateUI() {
-      const now = new Date();
-      document.getElementById('time-display').textContent = now.toLocaleTimeString();
+      const displayTime = getSelectedTime();
+      
       document.getElementById('az-display').textContent = `${state.azimuth.toFixed(0)}°`;
       document.getElementById('alt-display').textContent = `${state.altitude.toFixed(0)}°`;
       document.getElementById('gyro-display').textContent = state.gyroActive ? '✓ Active' : '✗ Inactive';
@@ -659,14 +988,24 @@
       const dirIndex = Math.round(state.azimuth / 45) % 8;
       document.getElementById('direction').textContent = dirs[dirIndex];
       document.getElementById('degrees').textContent = `${Math.round(state.azimuth)}°`;
+      
+      // Update time display
+      if (!state.useCustomTime) {
+        updateTimeDisplay(new Date());
+      }
     }
     
     function animate() {
-      const now = new Date();
-      const jd = julianDate(now);
+      const displayTime = getSelectedTime();
+      const jd = julianDate(displayTime);
       const lst = localSiderealTime(jd, state.longitude);
       
       drawBackground();
+      
+      BACKGROUND_STARS.forEach(star => {
+        drawBackgroundStar(star, state.azimuth, state.altitude);
+      });
+      
       drawHorizonLine(state.altitude);
       drawCardinalDirections(state.azimuth);
       
