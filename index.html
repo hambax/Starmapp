@@ -11,7 +11,6 @@
       background: #000;
       color: #fff;
       overflow: hidden;
-      touch-action: none;
     }
     #sky-canvas {
       position: fixed;
@@ -19,6 +18,7 @@
       left: 0;
       width: 100%;
       height: 100%;
+      touch-action: none;
     }
     #ui-overlay {
       position: fixed;
@@ -31,9 +31,10 @@
       align-items: center;
       justify-content: center;
       background: rgba(0,0,20,0.95);
-      z-index: 100;
+      z-index: 1000;
       padding: 20px;
       text-align: center;
+      touch-action: auto;
     }
     #ui-overlay.hidden { display: none; }
     h1 { font-size: 28px; margin-bottom: 10px; }
@@ -49,9 +50,12 @@
       margin: 10px;
       min-width: 240px;
       transition: transform 0.2s, box-shadow 0.2s;
+      -webkit-tap-highlight-color: rgba(255,255,255,0.2);
+      touch-action: manipulation;
+      user-select: none;
     }
-    .btn:hover { transform: scale(1.05); box-shadow: 0 4px 20px rgba(74,108,247,0.5); }
-    .btn:disabled { background: #444; cursor: not-allowed; transform: none; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { background: #444; cursor: not-allowed; transform: none; opacity: 0.7; }
     .btn.success { background: linear-gradient(135deg, #22c55e, #16a34a); }
     .btn.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
     .status { margin-top: 20px; font-size: 14px; color: #aaa; max-width: 300px; min-height: 24px; }
@@ -66,6 +70,7 @@
       z-index: 50;
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255,255,255,0.1);
+      pointer-events: none;
     }
     #info-panel div { margin: 4px 0; }
     .label { color: #888; }
@@ -81,6 +86,7 @@
       z-index: 50;
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255,255,255,0.1);
+      pointer-events: none;
     }
     #legend {
       position: fixed;
@@ -93,17 +99,10 @@
       z-index: 50;
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255,255,255,0.1);
+      pointer-events: none;
     }
     .legend-item { display: flex; align-items: center; margin: 4px 0; }
     .legend-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
-    .instructions {
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-radius: 12px;
-      margin: 20px 0;
-      max-width: 320px;
-    }
-    .instructions li { text-align: left; margin: 8px 0; font-size: 14px; }
     .permission-step {
       display: flex;
       align-items: center;
@@ -114,27 +113,11 @@
       width: 100%;
       max-width: 300px;
     }
-    .step-icon {
-      font-size: 24px;
-      margin-right: 12px;
-      width: 40px;
-    }
-    .step-status {
-      font-size: 20px;
-      margin-left: auto;
-    }
-    .step-text {
-      text-align: left;
-      flex: 1;
-    }
-    .step-title {
-      font-weight: bold;
-      font-size: 14px;
-    }
-    .step-desc {
-      font-size: 11px;
-      color: #888;
-    }
+    .step-icon { font-size: 24px; margin-right: 12px; width: 40px; }
+    .step-status { font-size: 20px; margin-left: auto; }
+    .step-text { text-align: left; flex: 1; }
+    .step-title { font-weight: bold; font-size: 14px; }
+    .step-desc { font-size: 11px; color: #888; }
     .gyro-note {
       background: rgba(245, 158, 11, 0.2);
       border: 1px solid rgba(245, 158, 11, 0.5);
@@ -172,12 +155,12 @@
     </div>
     
     <div class="gyro-note" id="ios-note" style="display:none;">
-      ⚠️ <strong>iOS Users:</strong> You'll see a popup asking for "Motion & Orientation" access. Please tap <strong>Allow</strong> to enable gyroscope tracking!
+      ⚠️ <strong>iOS Users:</strong> Tap "Enable Gyroscope" and allow "Motion & Orientation" access!
     </div>
     
-    <button class="btn" id="location-btn">📍 Grant Location Access</button>
-    <button class="btn" id="gyro-btn" style="display:none;">📱 Enable Gyroscope</button>
-    <button class="btn success" id="start-btn" style="display:none;">🚀 Start Star Tracking!</button>
+    <button class="btn" id="location-btn" type="button">📍 Grant Location Access</button>
+    <button class="btn" id="gyro-btn" type="button" style="display:none;">📱 Enable Gyroscope</button>
+    <button class="btn success" id="start-btn" type="button" style="display:none;">🚀 Start Star Tracking!</button>
     
     <p class="status" id="status"></p>
   </div>
@@ -185,8 +168,8 @@
   <div id="info-panel" style="display:none;">
     <div><span class="label">Time:</span> <span id="time-display">--</span></div>
     <div><span class="label">Location:</span> <span id="loc-display">--</span></div>
-    <div><span class="label">Azimuth:</span> <span id="az-display">--</span></div>
-    <div><span class="label">Altitude:</span> <span id="alt-display">--</span></div>
+    <div><span class="label">Facing:</span> <span id="az-display">--</span></div>
+    <div><span class="label">Elevation:</span> <span id="alt-display">--</span></div>
     <div><span class="label">Gyro:</span> <span id="gyro-display">--</span></div>
   </div>
   
@@ -202,7 +185,6 @@
   </div>
 
   <script>
-    // ==================== ASTRONOMICAL CALCULATIONS ====================
     const DEG2RAD = Math.PI / 180;
     const RAD2DEG = 180 / Math.PI;
     
@@ -257,7 +239,6 @@
     }
     
     function getMoonPosition(jd) {
-      const T = (jd - 2451545.0) / 36525;
       const L = (218.316 + 13.176396 * (jd - 2451545.0)) % 360;
       const M = (134.963 + 13.064993 * (jd - 2451545.0)) % 360;
       const F = (93.272 + 13.229350 * (jd - 2451545.0)) % 360;
@@ -284,21 +265,432 @@
     function getPlanetPosition(jd, planet) {
       const n = jd - 2451545.0;
       const planets = {
-        Mercury: { L0: 252.251, Lrate: 4.09233, a: 0.387, e: 0.2056, i: 7.0, node: 48.33, peri: 29.12 },
-        Venus: { L0: 181.980, Lrate: 1.60213, a: 0.723, e: 0.0068, i: 3.39, node: 76.68, peri: 54.88 },
-        Mars: { L0: 355.433, Lrate: 0.52403, a: 1.524, e: 0.0934, i: 1.85, node: 49.56, peri: 286.50 },
-        Jupiter: { L0: 34.351, Lrate: 0.08309, a: 5.203, e: 0.0484, i: 1.31, node: 100.46, peri: 275.07 },
-        Saturn: { L0: 50.077, Lrate: 0.03346, a: 9.537, e: 0.0542, i: 2.49, node: 113.64, peri: 336.01 }
+        Mercury: { L0: 252.251, Lrate: 4.09233 },
+        Venus: { L0: 181.980, Lrate: 1.60213 },
+        Mars: { L0: 355.433, Lrate: 0.52403 },
+        Jupiter: { L0: 34.351, Lrate: 0.08309 },
+        Saturn: { L0: 50.077, Lrate: 0.03346 }
       };
       
       const p = planets[planet];
       const L = (p.L0 + p.Lrate * n) % 360;
-      const M = L - p.peri;
-      const MRad = M * DEG2RAD;
-      
       const epsilon = 23.439;
       const lambdaRad = L * DEG2RAD;
       const ra = Math.atan2(Math.cos(epsilon * DEG2RAD) * Math.sin(lambdaRad), Math.cos(lambdaRad)) * RAD2DEG;
       const dec = Math.asin(Math.sin(epsilon * DEG2RAD) * Math.sin(lambdaRad)) * RAD2DEG;
       
-      const colors = { Mercury: '#B5B5B5', Venus: '#FFFACD',
+      const colors = { Mercury: '#B5B5B5', Venus: '#FFFACD', Mars: '#FF6B4A', Jupiter: '#FFB347', Saturn: '#F4D03F' };
+      const sizes = { Mercury: 6, Venus: 10, Mars: 8, Jupiter: 14, Saturn: 12 };
+      
+      return { ra: (ra + 360) % 360, dec, name: planet, color: colors[planet], size: sizes[planet] };
+    }
+    
+    const BRIGHT_STARS = [
+      ['Sirius', 101.29, -16.72, -1.46], ['Canopus', 95.99, -52.70, -0.72],
+      ['Arcturus', 213.92, 19.18, -0.05], ['Vega', 279.23, 38.78, 0.03],
+      ['Capella', 79.17, 45.99, 0.08], ['Rigel', 78.63, -8.20, 0.13],
+      ['Procyon', 114.83, 5.22, 0.34], ['Betelgeuse', 88.79, 7.41, 0.42],
+      ['Altair', 297.70, 8.87, 0.76], ['Aldebaran', 68.98, 16.51, 0.85],
+      ['Antares', 247.35, -26.43, 0.96], ['Spica', 201.30, -11.16, 0.97],
+      ['Pollux', 116.33, 28.03, 1.14], ['Fomalhaut', 344.41, -29.62, 1.16],
+      ['Deneb', 310.36, 45.28, 1.25], ['Regulus', 152.09, 11.97, 1.35],
+      ['Polaris', 37.95, 89.26, 1.98], ['Castor', 113.65, 31.89, 1.58]
+    ];
+    
+    let state = {
+      hasLocation: false,
+      hasGyroscope: false,
+      gyroActive: false,
+      latitude: 51.5,
+      longitude: -0.1,
+      alpha: 0, beta: 0, gamma: 0,
+      azimuth: 180,
+      altitude: 45
+    };
+    
+    const canvas = document.getElementById('sky-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    if (isIOS) {
+      document.getElementById('ios-note').style.display = 'block';
+    }
+    
+    function updateStatus(msg) {
+      document.getElementById('status').textContent = msg;
+    }
+    
+    function hideOverlay() {
+      document.getElementById('ui-overlay').classList.add('hidden');
+      document.getElementById('info-panel').style.display = 'block';
+      document.getElementById('compass').style.display = 'block';
+      document.getElementById('legend').style.display = 'block';
+    }
+    
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    
+    // ==================== LOCATION BUTTON ====================
+    const locationBtn = document.getElementById('location-btn');
+    locationBtn.addEventListener('click', handleLocationClick);
+    locationBtn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      handleLocationClick();
+    });
+    
+    async function handleLocationClick() {
+      const btn = document.getElementById('location-btn');
+      if (btn.disabled) return;
+      
+      btn.disabled = true;
+      btn.textContent = '📍 Requesting...';
+      updateStatus('Please allow location access...');
+      
+      try {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 15000
+          });
+        });
+        
+        state.latitude = position.coords.latitude;
+        state.longitude = position.coords.longitude;
+        state.hasLocation = true;
+        
+        document.getElementById('loc-status').textContent = '✅';
+        document.getElementById('loc-display').textContent = 
+          `${state.latitude.toFixed(2)}°, ${state.longitude.toFixed(2)}°`;
+        btn.textContent = '📍 Location Granted!';
+        btn.classList.add('success');
+        updateStatus('Great! Now enable gyroscope for motion tracking.');
+        
+      } catch (e) {
+        document.getElementById('loc-status').textContent = '⚠️';
+        btn.textContent = '📍 Using Default Location';
+        btn.classList.add('warning');
+        state.hasLocation = true;
+        updateStatus('Using London as default location.');
+      }
+      
+      document.getElementById('gyro-btn').style.display = 'block';
+    }
+    
+    // ==================== GYROSCOPE BUTTON ====================
+    const gyroBtn = document.getElementById('gyro-btn');
+    gyroBtn.addEventListener('click', handleGyroClick);
+    gyroBtn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      handleGyroClick();
+    });
+    
+    async function handleGyroClick() {
+      const btn = document.getElementById('gyro-btn');
+      if (btn.disabled) return;
+      
+      btn.disabled = true;
+      btn.textContent = '📱 Requesting...';
+      updateStatus('Please allow motion access...');
+      
+      let permissionGranted = false;
+      
+      // iOS 13+ requires explicit permission request
+      if (typeof DeviceOrientationEvent !== 'undefined' && 
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          const permission = await DeviceOrientationEvent.requestPermission();
+          permissionGranted = (permission === 'granted');
+        } catch (e) {
+          console.error('Permission request failed:', e);
+        }
+      } else {
+        // Android and older iOS - permission not required
+        permissionGranted = true;
+      }
+      
+      if (permissionGranted) {
+        // Start listening for orientation events
+        window.addEventListener('deviceorientation', handleOrientation, true);
+        window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+        
+        // Wait to see if we actually get data
+        await new Promise(r => setTimeout(r, 800));
+        
+        if (state.gyroActive) {
+          state.hasGyroscope = true;
+          document.getElementById('gyro-status').textContent = '✅';
+          btn.textContent = '📱 Gyroscope Active!';
+          btn.classList.add('success');
+          updateStatus('Gyroscope working! Tap Start to begin.');
+        } else {
+          document.getElementById('gyro-status').textContent = '⚠️';
+          btn.textContent = '📱 Using Touch Controls';
+          btn.classList.add('warning');
+          updateStatus('No gyro data. Drag to look around.');
+        }
+      } else {
+        document.getElementById('gyro-status').textContent = '❌';
+        btn.textContent = '📱 Permission Denied';
+        btn.classList.add('warning');
+        updateStatus('Motion access denied. Drag to look around.');
+      }
+      
+      document.getElementById('start-btn').style.display = 'block';
+    }
+    
+    function handleOrientation(event) {
+      if (event.alpha !== null || event.beta !== null || event.gamma !== null) {
+        state.gyroActive = true;
+        state.alpha = event.alpha || 0;
+        state.beta = event.beta || 0;
+        state.gamma = event.gamma || 0;
+        
+        // Calculate compass heading
+        if (event.webkitCompassHeading !== undefined) {
+          state.azimuth = event.webkitCompassHeading;
+        } else {
+          state.azimuth = (360 - state.alpha) % 360;
+        }
+        
+        // Calculate altitude from phone tilt
+        state.altitude = Math.max(-90, Math.min(90, state.beta));
+      }
+    }
+    
+    // ==================== START BUTTON ====================
+    const startBtn = document.getElementById('start-btn');
+    startBtn.addEventListener('click', handleStartClick);
+    startBtn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      handleStartClick();
+    });
+    
+    function handleStartClick() {
+      hideOverlay();
+      requestAnimationFrame(animate);
+    }
+    
+    // ==================== TOUCH/MOUSE CONTROLS FOR CANVAS ====================
+    let touchStart = { x: 0, y: 0 };
+    let isDragging = false;
+    
+    canvas.addEventListener('touchstart', (e) => {
+      touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      isDragging = true;
+    }, { passive: true });
+    
+    canvas.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      if (state.hasGyroscope && state.gyroActive) return;
+      
+      const dx = e.touches[0].clientX - touchStart.x;
+      const dy = e.touches[0].clientY - touchStart.y;
+      state.azimuth = (state.azimuth - dx * 0.5 + 360) % 360;
+      state.altitude = Math.max(-90, Math.min(90, state.altitude + dy * 0.3));
+      touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }, { passive: true });
+    
+    canvas.addEventListener('touchend', () => { isDragging = false; });
+    
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      touchStart = { x: e.clientX, y: e.clientY };
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - touchStart.x;
+      const dy = e.clientY - touchStart.y;
+      state.azimuth = (state.azimuth - dx * 0.3 + 360) % 360;
+      state.altitude = Math.max(-90, Math.min(90, state.altitude + dy * 0.3));
+      touchStart = { x: e.clientX, y: e.clientY };
+    });
+    
+    canvas.addEventListener('mouseup', () => { isDragging = false; });
+    canvas.addEventListener('mouseleave', () => { isDragging = false; });
+    
+    // ==================== RENDERING ====================
+    function getScreenPosition(objAz, objAlt, viewAz, viewAlt) {
+      let dAz = objAz - viewAz;
+      if (dAz > 180) dAz -= 360;
+      if (dAz < -180) dAz += 360;
+      
+      const dAlt = objAlt - viewAlt;
+      const hFov = 80;
+      const vFov = 80;
+      
+      const x = canvas.width / 2 + (dAz / hFov) * canvas.width;
+      const y = canvas.height / 2 - (dAlt / vFov) * canvas.height;
+      const inView = Math.abs(dAz) < hFov && Math.abs(dAlt) < vFov;
+      
+      return { x, y, inView };
+    }
+    
+    function drawCelestialObject(obj, viewAz, viewAlt, lst) {
+      const { alt, az } = raDecToAltAz(obj.ra, obj.dec, state.latitude, lst);
+      const pos = getScreenPosition(az, alt, viewAz, viewAlt);
+      
+      if (!pos.inView) return;
+      
+      const gradient = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, obj.size * 2.5);
+      gradient.addColorStop(0, obj.color);
+      gradient.addColorStop(0.4, obj.color + '88');
+      gradient.addColorStop(1, 'transparent');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, obj.size * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = obj.color;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, obj.size / 2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 13px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#000';
+      ctx.shadowBlur = 4;
+      ctx.fillText(obj.name, pos.x, pos.y + obj.size + 14);
+      ctx.shadowBlur = 0;
+    }
+    
+    function drawStar(star, viewAz, viewAlt, lst) {
+      const [name, ra, dec, mag] = star;
+      const { alt, az } = raDecToAltAz(ra, dec, state.latitude, lst);
+      const pos = getScreenPosition(az, alt, viewAz, viewAlt);
+      
+      if (!pos.inView) return;
+      
+      const size = Math.max(1.5, 4.5 - mag);
+      const brightness = Math.min(255, Math.floor(255 * (2.5 - mag) / 3.5));
+      
+      ctx.fillStyle = `rgb(${brightness}, ${brightness}, ${Math.min(255, brightness + 30)})`;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, size, 0, Math.PI * 2);
+      ctx.fill();
+      
+      if (mag < 1.0) {
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.font = '11px -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(name, pos.x, pos.y + size + 12);
+      }
+    }
+    
+    function drawBackground() {
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradient.addColorStop(0, '#05051a');
+      gradient.addColorStop(0.5, '#0a0a2e');
+      gradient.addColorStop(1, '#12122a');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Background stars
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      for (let i = 0; i < 300; i++) {
+        const seed1 = Math.sin(i * 567.89) * 10000;
+        const seed2 = Math.cos(i * 123.45) * 10000;
+        const x = ((seed1 % 1000) / 1000 * 3 + state.azimuth / 120) % 1 * canvas.width;
+        const y = ((seed2 % 1000) / 1000 * 3 + state.altitude / 180) % 1 * canvas.height;
+        const size = (i % 4) * 0.3 + 0.3;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    
+    function drawHorizonLine(viewAlt) {
+      const horizonY = canvas.height / 2 + (viewAlt / 90) * canvas.height;
+      
+      if (horizonY > 0 && horizonY < canvas.height) {
+        ctx.strokeStyle = 'rgba(70, 130, 180, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([15, 10]);
+        ctx.beginPath();
+        ctx.moveTo(0, horizonY);
+        ctx.lineTo(canvas.width, horizonY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        ctx.fillStyle = 'rgba(70, 130, 180, 0.7)';
+        ctx.font = '12px -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('─── Horizon ───', canvas.width / 2, horizonY - 8);
+      }
+    }
+    
+    function drawCardinalDirections(viewAz) {
+      const directions = [
+        { az: 0, label: 'N', color: '#ff6b6b' },
+        { az: 90, label: 'E', color: '#ffd93d' },
+        { az: 180, label: 'S', color: '#6bcb77' },
+        { az: 270, label: 'W', color: '#4d96ff' }
+      ];
+      
+      ctx.font = 'bold 20px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      
+      directions.forEach(dir => {
+        let dAz = dir.az - viewAz;
+        if (dAz > 180) dAz -= 360;
+        if (dAz < -180) dAz += 360;
+        
+        if (Math.abs(dAz) < 50) {
+          const x = canvas.width / 2 + (dAz / 80) * canvas.width;
+          ctx.fillStyle = dir.color;
+          ctx.fillText(dir.label, x, canvas.height - 50);
+        }
+      });
+    }
+    
+    function updateUI() {
+      const now = new Date();
+      document.getElementById('time-display').textContent = now.toLocaleTimeString();
+      document.getElementById('az-display').textContent = `${state.azimuth.toFixed(0)}°`;
+      document.getElementById('alt-display').textContent = `${state.altitude.toFixed(0)}°`;
+      document.getElementById('gyro-display').textContent = state.gyroActive ? '✓ Active' : '✗ Inactive';
+      
+      const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      const dirIndex = Math.round(state.azimuth / 45) % 8;
+      document.getElementById('direction').textContent = dirs[dirIndex];
+      document.getElementById('degrees').textContent = `${Math.round(state.azimuth)}°`;
+    }
+    
+    function animate() {
+      const now = new Date();
+      const jd = julianDate(now);
+      const lst = localSiderealTime(jd, state.longitude);
+      
+      drawBackground();
+      drawHorizonLine(state.altitude);
+      drawCardinalDirections(state.azimuth);
+      
+      BRIGHT_STARS.forEach(star => {
+        drawStar(star, state.azimuth, state.altitude, lst);
+      });
+      
+      ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn'].forEach(planet => {
+        const obj = getPlanetPosition(jd, planet);
+        drawCelestialObject(obj, state.azimuth, state.altitude, lst);
+      });
+      
+      const moon = getMoonPosition(jd);
+      drawCelestialObject(moon, state.azimuth, state.altitude, lst);
+      
+      const sun = getSunPosition(jd);
+      drawCelestialObject(sun, state.azimuth, state.altitude, lst);
+      
+      updateUI();
+      requestAnimationFrame(animate);
+    }
+    
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+  </script>
+</body>
+</html>
